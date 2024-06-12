@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body onmousemove="setTargetMovement(event)">
+    <div class="screenBorder"></div>
+    <div class="screenBorder"></div>
+
+    <div id="clientSpace">
+        <div id="clientRequests">
+            <div class="clientRequest"></div>
+            <div class="clientRequest"></div>
+            <div class="clientRequest"></div>
+            <div class="clientRequest"></div>
+        </div>
+        <div id="clientRow">
+            <div class="clientSpace" id="client0" onclick="doStuff(event)"></div>
+            <div class="clientSpace" id="client1" onclick="doStuff(event)"></div>
+            <div class="clientSpace" id="client2" onclick="doStuff(event)"></div>
+            <div class="clientSpace" id="client3" onclick="doStuff(event)"></div>
+        </div>
+    </div>
+
+    <div id="kitchen">
+        <div id="leftSide">
+            <div class="kitchenStuff" id="saladBox" onclick="doStuff(event)">
+                <div class="salad">
+                    <div class="saladBowl"></div>
+                    <div class="saladTop">
+                        <div class="saladLeaf"></div>
+                        <div class="saladLeaf"></div>
+                        <div class="saladLeaf"></div>
+                        <div class="saladLeaf"></div>
+                        <div class="saladLeaf"></div>
+                        <div class="tomato"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="kitchenStuff" id="buns" onclick="doStuff(event)">
+                <div class="burgerBun"></div>
+                <div class="burgerBun"></div>
+            </div>
+            <div class="kitchenStuff grill" id="grill1" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff grill" id="grill2" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff" id="meat" onclick="doStuff(event)"></div>
+        </div>
+        <div id="bottomSide">
+            <div class="kitchenStuff" id="trash" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff" id="holder1" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff" id="holder2" onclick="doStuff(event)"></div>
+        </div>
+        <div id="rightSide">
+            <div class="kitchenStuff" id="frier1" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff" id="frier2" onclick="doStuff(event)"></div>
+            <div class="kitchenStuff" id="soda" onclick="doStuff(event)"></div>
+        </div>
+
+        <div id="runnableSpace">
+            <div id="player">
+                <div class="hair"></div>
+                <div class="head">
+                    <div class="eyeSection">
+                        <div class="eye">
+                            <div class="pupil"></div>
+                        </div>
+                        <div class="eye">
+                            <div class="pupil"></div>
+                        </div>
+                    </div>
+                    <div class="mouth"></div>
+                </div>
+                <div class="body"></div>
+                <div id="handSlot"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script defer>
+    const
+        saladBox = document.getElementById("saladBox"),
+        buns = document.getElementById("buns"),
+        grill1 = document.getElementById("grill1"),
+        grill2 = document.getElementById("grill2"),
+        meat = document.getElementById("meat"),
+        trash = document.getElementById("trash"),
+        holder1 = document.getElementById("holder1"),
+        holder2 = document.getElementById("holder2"),
+        frier1 = document.getElementById("frier1"),
+        frier2 = document.getElementById("frier2"),
+        soda = document.getElementById("soda"),
+        handSlot = document.getElementById("handSlot"),
+        clientRequests = document.getElementsByClassName("clientRequest"),
+        clientSpaces = document.getElementsByClassName("clientSpace"),
+        player = document.getElementById("player");
+
+    // 177 230
+
+    var hand = '',
+        frier1Time = 0,
+        frier2Time = 0,
+        grill1Time = 0,
+        grill2Time = 0;
+
+    const playerInnerHTML = `<div class="person">
+        <div class="hair"></div>
+        <div class="head">
+            <div class="eyeSection">
+                <div class="eye">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="mouth"></div>
+        </div>
+        <div class="body"></div>
+    </div>`,
+        saladInnerHTML = `<div class="salad">
+        <div class="saladBowl"></div>
+        <div class="saladTop">
+            <div class="saladLeaf"></div>
+            <div class="saladLeaf"></div>
+            <div class="saladLeaf"></div>
+            <div class="saladLeaf"></div>
+            <div class="saladLeaf"></div>
+            <div class="tomato"></div>
+        </div>
+    </div>`,
+        burgerInnerHTML = `<div class="burger">
+        <div class="burgerBun"></div>
+        <div class="cookedMeat"></div>
+        <div class="burgerBun"></div>
+    </div>`,
+        friesInnerHTML = `<div class="cookedFries">
+        <div class="fry"></div>
+        <div class="fry"></div>
+        <div class="fry"></div>
+        <div class="fry"></div>
+    </div>`,
+        sodaInnerHTML = `<div class="soda">
+        <div class="sodaCan"></div>
+        <div class="sodaTop"></div>
+    </div>`;
+
+    function frierStuff(object) {
+        object.innerHTML = `
+        <div class="rawFries">
+            <div class="fry"></div>
+            <div class="fry"></div>
+            <div class="fry"></div>
+            <div class="fry"></div>
+        </div>`;
+    }
+
+    function doStuff(event) {
+        let clicked = event.target.id;
+        let object;
+        switch(clicked) {
+            case "client0":
+            case "client1":
+            case "client2":
+            case "client3":
+                index = clicked[6];
+                console.log(hand, orders[index][0], orders[index][1]);
+                if( hand == orders[index][0] && orderQuantities[index][0] != 0 ) {
+                    hand = '';
+                    handSlot.innerHTML = '';
+                    let text = clientRequests[index].children[0].innerHTML;
+                    clientRequests[index].children[0].innerHTML = --orderQuantities[index][0] + text.substring(1);
+                } else if ( hand == orders[index][1] && orderQuantities[index][1] != 0 ) {
+                    hand = '';
+                    handSlot.innerHTML = '';
+                    let text = clientRequests[index].children[1].innerHTML;
+                    clientRequests[index].children[1].innerHTML = --orderQuantities[index][1] + text.substring(1);
+                }
+                if(orderQuantities[index][0] == 0 && orderQuantities[index][1] == 0) {
+                    clientRequests[index].innerHTML = "";
+                    clientSpaces[index].innerHTML = "";
+                }
+                break;
+            case "saladBox":
+                if(hand == '') {
+                    hand = "salad";
+                    handSlot.innerHTML = saladInnerHTML;
+                }
+                break;
+                
+            case "buns":
+                if(hand == "cookedMeat") {
+                    hand = "burger"
+                    handSlot.innerHTML = burgerInnerHTML;
+                }
+                break;
+
+            case "grill1":
+            case "grill2":
+                object = (clicked == "grill1") ? grill1 : grill2
+                if(hand == '' && object.innerHTML != "") {
+                    if(object.children[0].className == "cookedMeat") {
+                        hand = "cookedMeat";
+                        object.innerHTML = "";
+                        handSlot.innerHTML = `<div class="cookedMeat"></div>`;
+                        break;
+                    }
+                    if(object.children[0].className == "burntMeat") {
+                        hand = "burntMeat";
+                        object.innerHTML = "";
+                        handSlot.innerHTML = `<div class="burntMeat"></div>`;
+                        break;
+                    }
+                } else if (hand == "meatPiece")
+                    if(object.innerHTML == "") {
+                        hand = '';
+                        object.innerHTML = `<div class="meatPiece"></div>`;
+                        handSlot.innerHTML = "";
+                    }
+                break;
+
+            case "meat":
+                if (hand == '') {
+                    hand = "meatPiece";
+                    handSlot.innerHTML = `<div class="meatPiece"></div>`;
+                }
+                break;
+            
+            case "trash":
+                hand = '';
+                handSlot.innerHTML = "";
+                break;
+                
+            case "holder1":      
+            case "holder2":
+                object = (clicked == "holder1") ? holder1 : holder2;
+                if(object.innerHTML == "") {
+                    switch(hand) {
+                        case "salad":
+                            object.innerHTML = saladInnerHTML;
+                            break;
+                        case "meatPiece":
+                        case "cookedMeat":
+                        case "burntMeat":
+                            object.innerHTML = `<div class="${hand}"></div>`;
+                            break;
+                        case "burger":
+                            object.innerHTML = burgerInnerHTML;
+                            break;
+                        case "cookedFries":
+                        case "burntFries":
+                            object.innerHTML = `
+                                <div class="${hand}">
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                </div>`;
+                            break;
+                        case "soda":
+                            object.innerHTML = sodaInnerHTML;
+                            break;
+                        case '': 
+                            break;
+                        //MARK: ADD BURGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    }
+                    handSlot.innerHTML = "";
+                    color = "";
+                    hand = '';
+                } else
+                    if(hand == '') {
+                        className = object.children[0].className;
+                        switch(className) {
+                            case "salad":
+                                hand = "salad";
+                                handSlot.innerHTML = saladInnerHTML;
+                                break;
+                            case "meatPiece": 
+                            case "cookedMeat":
+                            case "burntMeat":
+                                hand = className;
+                                handSlot.innerHTML = `<div class="${className}"></div>`;
+                                break;
+                            case "burger":
+                                hand = "burger";
+                                handSlot.innerHTML = burgerInnerHTML;
+                                break;
+                            case "cookedFries":
+                            case "burntFries":
+                                hand = className;
+                                handSlot.innerHTML = `
+                                <div class="${className}">
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                    <div class="fry"></div>
+                                </div>`;
+                                break;
+                            case "soda":
+                                hand = "soda";
+                                handSlot.innerHTML = sodaInnerHTML;
+                                break;
+                        }
+                        object.innerHTML = "";
+                    }
+                break;
+
+            case "frier1":
+            case "frier2":
+                object = (clicked == "frier1") ? frier1 : frier2;
+                if(object.innerHTML == "")
+                    frierStuff(object);
+
+                else if (hand == '') {
+                    className = object.children[0].className;
+                    if(className != "rawFries") {
+                        hand = className;
+                        handSlot.innerHTML = `
+                        <div class="${className}">
+                            <div class="fry"></div>
+                            <div class="fry"></div>
+                            <div class="fry"></div>
+                            <div class="fry"></div>
+                        </div>`;
+                        object.innerHTML = "";
+                    }
+                }
+                break;
+            case "soda": {
+                if (hand == '') {
+                    hand = "soda";
+                    handSlot.innerHTML = sodaInnerHTML;
+                }
+                break;
+            }
+        }
+    }
+
+    function frierInnerClock(frier, frierTime) {
+        if(frier.innerHTML != "") {
+            if(++frierTime > 300 && frierTime < 900)
+                frier.children[0].className = "cookedFries";
+            else if (frierTime > 720)
+                frier.children[0].className = "burntFries";
+        } else {
+            frierTime = 0;
+        }
+        return frierTime;
+    }
+    
+    let clientIndex = 3;
+    let possibleOrders = [saladInnerHTML, burgerInnerHTML, friesInnerHTML, sodaInnerHTML];
+    let orderNames = ["salad", "burger", "cookedFries", "soda"];
+    let orders = [["", ""], ["", ""], ["", ""], ["", ""]];
+    let orderQuantities = [[0, 0], [0, 0], [0, 0], [0, 0]];
+    function addClient() {
+        if(++clientIndex > 3)
+            clientIndex = 0;
+        if(clientSpaces[clientIndex].innerHTML == '') {
+            clientSpaces[clientIndex].innerHTML = playerInnerHTML;
+            let order1 = Math.floor(Math.random() * 4);
+                order2 = Math.floor(Math.random() * 4),
+                order1Quantity = Math.floor(Math.random() * 2) + 1;
+            if (order1 != order2) {
+                order2Quantity = Math.floor(Math.random() * 2) + 1;
+                clientRequests[clientIndex].innerHTML = `<div class="requestPart">${order1Quantity}${possibleOrders[order1]}</div>
+                                                        <div class="requestPart">${order2Quantity}${possibleOrders[order2]}</div>`;
+
+                orders[clientIndex][0] = orderNames[order1];
+                orders[clientIndex][1] = orderNames[order2];
+                orderQuantities[clientIndex][0] = order1Quantity;
+                orderQuantities[clientIndex][1] = order2Quantity;
+            } else {
+                clientRequests[clientIndex].innerHTML = `<div class="requestPart"></div><div class="requestPart">${order1Quantity}${possibleOrders[order1]}</div>`;
+                orders[clientIndex][0] = orderNames[order1];
+                orderQuantities[clientIndex][0] = order1Quantity;
+            }
+        }
+    }
+
+    setInterval(addClient, 7000);
+
+    var playerX = 0, playerY = 0, x, y,
+        increment = 5, targetX = playerX, targetY = playerY,
+        incrementX, incrementY;
+
+    function setTargetMovement(event) {
+        x = event.clientX - 850;
+        if(x < 0)
+            x = 0;
+        if(x > 177)
+            x = 177;
+        y = event.clientY - 520;
+        if(y < 0)
+            y = 0;
+        if(y > 230)
+            y = 230;
+
+        let distanceY = Math.abs(y - playerY),
+            distanceX = Math.abs(x - playerX);
+        if(distanceY > distanceX) {
+            incrementY = increment;
+            incrementX = increment * distanceX / distanceY;
+        } else {
+            incrementX = increment;
+            incrementY = increment * distanceY / distanceX;
+        }
+
+        let incrementXY = Math.sqrt(incrementX * 2 + incrementY * 2);
+        incrementX *= increment / incrementXY;
+        incrementY *= increment / incrementXY;
+    }
+
+    function move() {
+        if(playerX != x || playerY != y) {
+            if (x - targetX > incrementX)
+                targetX += incrementX;
+            else if (targetX - x > incrementX)
+                targetX -= incrementX;
+            else
+                targetX = x;
+
+            if (y - targetY > incrementY)
+                targetY += incrementY;
+            else if (targetY - y > incrementY)
+                targetY -= incrementY;
+            else
+                targetY = y;
+
+            playerX = targetX;
+            playerY = targetY;
+
+            player.style = `left: ${playerX}px; top: ${playerY}px;`;
+        }
+    }
+
+    function grierInnerClock(grill, grillTime) {
+        if(grill.innerHTML != "") {
+            if(++grillTime > 300 && grillTime < 900)
+            grill.children[0].className = "cookedMeat";
+            else if (grillTime > 720)
+                grill.children[0].className = "burntMeat";
+        } else {
+            grillTime = 0;
+        }
+        return grillTime;
+    }
+
+    function run() {
+        frier1Time = frierInnerClock(frier1, frier1Time);
+        frier2Time = frierInnerClock(frier2, frier2Time);
+
+        grill1Time = grierInnerClock(grill1, grill1Time);
+        grill2Time = grierInnerClock(grill2, grill2Time);
+
+        move();
+    }
+    setInterval(run, 16.6);
+</script>
+</html>
